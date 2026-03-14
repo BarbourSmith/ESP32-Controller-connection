@@ -4,15 +4,19 @@
 // ---------------------------------------------------------------------------
 // MAC Address Configuration
 //
-// The PS3 controller stores the Bluetooth MAC address of the host it should
-// connect to.  Set CONTROLLER_MAC below to whatever address is already stored
-// in YOUR controller (read it out with SixaxisPairTool or sixaxispairer), OR
-// change the stored address in the controller to match this value.
+// A DualShock 3 controller stores the Bluetooth MAC address of its host.
+// Factory-new (or reset) controllers ship with 00:00:00:00:00:00 as their
+// stored master address.  Keeping this default means a brand-new controller
+// will connect to the ESP32 straight away with no extra tools required.
 //
-// If you leave this as-is you can use SixaxisPairTool to write
-// "01:02:03:04:05:06" into the controller, which will then pair to this ESP32.
+// If your controller has previously been paired to a PS3 console it will
+// already store that console's MAC address instead.  In that case either:
+//   A) Use SixaxisPairTool / sixaxispairer to write "00:00:00:00:00:00"
+//      back into the controller (factory-reset the pairing), or
+//   B) Read the current master address from the controller with the same
+//      tool and change CONTROLLER_MAC below to match.
 // ---------------------------------------------------------------------------
-#define CONTROLLER_MAC "01:02:03:04:05:06"
+#define CONTROLLER_MAC "00:00:00:00:00:00"
 
 // Yield interval for the main loop (ms). All controller work is done in
 // the notify() callback; the loop just needs to yield to the scheduler.

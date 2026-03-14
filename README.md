@@ -26,26 +26,30 @@ protocol.
 
 There are two equivalent approaches – choose whichever is easier:
 
-### Option A – Write the firmware MAC address into the controller
+### Option A – Controller is factory-new or has been reset (easiest)
 
-1. Flash the firmware (see *Build & Flash* below).  
-   The default MAC address is `01:02:03:04:05:06`.
-2. Connect the controller to your PC via USB and open SixaxisPairTool.
-3. Change the *Master Bluetooth Address* in the tool to `01:02:03:04:05:06`
-   and click *Update*.
-4. Disconnect the USB cable, press the **PS** button on the controller –
-   it should now connect to the ESP32.
+A brand-new DualShock 3 controller ships with `00:00:00:00:00:00` as its stored
+master Bluetooth address, which is exactly what the firmware defaults to.  
+Just flash the firmware and press the **PS** button – the controller will connect
+automatically.
 
-### Option B – Set the firmware to match your controller's stored MAC
+### Option B – Controller was previously paired to a PS3 console
 
-1. Connect the controller to your PC via USB and open SixaxisPairTool.
-2. Note the *Master Bluetooth Address* shown (e.g. `aa:bb:cc:dd:ee:ff`).
-3. Edit `src/main.cpp` and change `CONTROLLER_MAC` to that address:
-   ```cpp
-   #define CONTROLLER_MAC "aa:bb:cc:dd:ee:ff"
-   ```
-4. Flash the firmware.  The ESP32 will now advertise that MAC address and
-   the controller will connect automatically when you press **PS**.
+The controller will already store the PS3 console's MAC address.  Choose one of
+the following:
+
+* **Reset the controller pairing** – Connect the controller to your PC via USB,
+  open SixaxisPairTool / sixaxispairer, and write `00:00:00:00:00:00` as the
+  *Master Bluetooth Address*.  This reverts it to factory default so Option A
+  applies again.
+
+* **Match the firmware to the controller** – In SixaxisPairTool note the
+  *Master Bluetooth Address* currently stored (e.g. `aa:bb:cc:dd:ee:ff`), then
+  edit `src/main.cpp`:
+  ```cpp
+  #define CONTROLLER_MAC "aa:bb:cc:dd:ee:ff"
+  ```
+  Flash the firmware and press **PS** to connect.
 
 ## Build & Flash
 
@@ -66,7 +70,7 @@ Once connected you will see messages like:
 
 ```
 Ready – waiting for PS3 controller...
-ESP32 Bluetooth MAC address: 01:02:03:04:05:06
+ESP32 Bluetooth MAC address: 00:00:00:00:00:00
 PS3 Controller Connected!
 Cross (X) pressed
 Cross (X) released
