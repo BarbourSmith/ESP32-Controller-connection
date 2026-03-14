@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <Ps3Controller.h>
-#include <esp_bt.h>
+#include <esp_bt_device.h>
 
 // The ESP32 uses its own native Bluetooth MAC address – nothing is overwritten.
 // After flashing, open the serial monitor to read the MAC that is printed, then
@@ -65,6 +65,20 @@ void notify() {
     if (Ps3.event.button_up.select) Serial.println("Select released");
     if (Ps3.event.button_up.start)  Serial.println("Start released");
     if (Ps3.event.button_up.ps)     Serial.println("PS button released");
+
+    // --- Analog sticks (dead-zone ±10 around center 128) ---
+    const int DEAD_ZONE = 10;
+    int lx = Ps3.data.analog.stick.lx;  // left stick X:  -128..127
+    int ly = Ps3.data.analog.stick.ly;  // left stick Y:  -128..127
+    int rx = Ps3.data.analog.stick.rx;  // right stick X: -128..127
+    int ry = Ps3.data.analog.stick.ry;  // right stick Y: -128..127
+
+    if (abs(lx) > DEAD_ZONE || abs(ly) > DEAD_ZONE) {
+        Serial.printf("Left  stick  X: %4d  Y: %4d\n", lx, ly);
+    }
+    if (abs(rx) > DEAD_ZONE || abs(ry) > DEAD_ZONE) {
+        Serial.printf("Right stick  X: %4d  Y: %4d\n", rx, ry);
+    }
 }
 
 void setup() {
