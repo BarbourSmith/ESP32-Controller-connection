@@ -1,22 +1,10 @@
 #include <Arduino.h>
 #include <Ps3Controller.h>
+#include <esp_bt.h>
 
-// ---------------------------------------------------------------------------
-// MAC Address Configuration
-//
-// A DualShock 3 controller stores the Bluetooth MAC address of its host.
-// Factory-new (or reset) controllers ship with 00:00:00:00:00:00 as their
-// stored master address.  Keeping this default means a brand-new controller
-// will connect to the ESP32 straight away with no extra tools required.
-//
-// If your controller has previously been paired to a PS3 console it will
-// already store that console's MAC address instead.  In that case either:
-//   A) Use SixaxisPairTool / sixaxispairer to write "00:00:00:00:00:00"
-//      back into the controller (factory-reset the pairing), or
-//   B) Read the current master address from the controller with the same
-//      tool and change CONTROLLER_MAC below to match.
-// ---------------------------------------------------------------------------
-#define CONTROLLER_MAC "00:00:00:00:00:00"
+// The ESP32 uses its own native Bluetooth MAC address – nothing is overwritten.
+// After flashing, open the serial monitor to read the MAC that is printed, then
+// use SixaxisPairTool / sixaxispairer to write that MAC into the controller.
 
 // Yield interval for the main loop (ms). All controller work is done in
 // the notify() callback; the loop just needs to yield to the scheduler.
@@ -86,14 +74,22 @@ void setup() {
     Ps3.attach(notify);
     Ps3.attachOnConnect(onConnect);
 
-    // Start the Ps3 library with the target MAC address.
-    // This sets the ESP32's Bluetooth MAC address so the controller
-    // (which stores a fixed host address) can find it.
-    Ps3.begin(CONTROLLER_MAC);
+    // Start the Ps3 library without overriding the MAC address so the ESP32
+    // keeps its own native Bluetooth MAC.
+    Ps3.begin();
 
+    // Print the ESP32's actual Bluetooth MAC address.  Use SixaxisPairTool /
+    // sixaxispairer to write this address into the controller so it connects.
     Serial.println("Ready – waiting for PS3 controller...");
     Serial.print("ESP32 Bluetooth MAC address: ");
-    Serial.println(CONTROLLER_MAC);
+    const uint8_t* mac = esp_bt_dev_get_address();
+    if (mac) {
+        char macStr[18];
+        snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
+                 mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        Serial.println(macStr);
+    }
+    Serial.println("→ Write the above MAC into the controller via SixaxisPairTool.");
 }
 
 void loop() {

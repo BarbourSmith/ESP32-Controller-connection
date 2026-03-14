@@ -6,8 +6,9 @@ When a button is pressed or released the event is printed over the serial port.
 ## How it works
 
 A PS3 controller stores the Bluetooth MAC address of the console it should
-connect to.  Instead of reprogramming the controller we set the ESP32's
-Bluetooth MAC address to match what the controller already expects.
+connect to.  The ESP32 uses its own native Bluetooth MAC address — nothing is
+overwritten.  You read that MAC from the serial monitor after flashing and write
+it into the controller once with a pairing tool.
 
 The firmware uses the [esp32-ps3](https://github.com/jvpernis/esp32-ps3)
 library (PS3 Controller Host) which handles the low-level Bluetooth HID
@@ -20,36 +21,19 @@ protocol.
 * A DualShock 3 controller
 * [SixaxisPairTool](https://dancingpixelstudios.com/sixaxis-controller/sixaxispairtool/)
   (Windows/macOS) **or** [sixaxispairer](https://github.com/user-none/sixaxispairer)
-  (Linux) to read/write the MAC address stored in the controller
+  (Linux) to write the ESP32's MAC address into the controller
 
 ## Setup & Pairing
 
-There are two equivalent approaches – choose whichever is easier:
-
-### Option A – Controller is factory-new or has been reset (easiest)
-
-A brand-new DualShock 3 controller ships with `00:00:00:00:00:00` as its stored
-master Bluetooth address, which is exactly what the firmware defaults to.  
-Just flash the firmware and press the **PS** button – the controller will connect
-automatically.
-
-### Option B – Controller was previously paired to a PS3 console
-
-The controller will already store the PS3 console's MAC address.  Choose one of
-the following:
-
-* **Reset the controller pairing** – Connect the controller to your PC via USB,
-  open SixaxisPairTool / sixaxispairer, and write `00:00:00:00:00:00` as the
-  *Master Bluetooth Address*.  This reverts it to factory default so Option A
-  applies again.
-
-* **Match the firmware to the controller** – In SixaxisPairTool note the
-  *Master Bluetooth Address* currently stored (e.g. `aa:bb:cc:dd:ee:ff`), then
-  edit `src/main.cpp`:
-  ```cpp
-  #define CONTROLLER_MAC "aa:bb:cc:dd:ee:ff"
-  ```
-  Flash the firmware and press **PS** to connect.
+1. Flash the firmware (see *Build & Flash* below).
+2. Open the serial monitor – the ESP32 will print its Bluetooth MAC address,
+   for example `14:33:5C:38:26:B8`.
+3. Connect the controller to your PC via USB and open SixaxisPairTool /
+   sixaxispairer.
+4. Set the *Master Bluetooth Address* to the MAC shown in step 2 and click
+   *Update*.
+5. Disconnect the USB cable, press the **PS** button – the controller will
+   connect to the ESP32.
 
 ## Build & Flash
 
@@ -70,7 +54,8 @@ Once connected you will see messages like:
 
 ```
 Ready – waiting for PS3 controller...
-ESP32 Bluetooth MAC address: 00:00:00:00:00:00
+ESP32 Bluetooth MAC address: 14:33:5C:38:26:B8
+→ Write the above MAC into the controller via SixaxisPairTool.
 PS3 Controller Connected!
 Cross (X) pressed
 Cross (X) released
